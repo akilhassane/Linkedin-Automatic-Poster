@@ -1,0 +1,142 @@
+version: '3.8'
+
+services:
+  linkedin-automation:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: linkedin-automation
+    restart: unless-stopped
+    environment:
+      # LinkedIn API Configuration
+      - LINKEDIN_CLIENT_ID=${LINKEDIN_CLIENT_ID}
+      - LINKEDIN_CLIENT_SECRET=${LINKEDIN_CLIENT_SECRET}
+      - LINKEDIN_REDIRECT_URI=${LINKEDIN_REDIRECT_URI:-http://localhost:8000/callback}
+      - LINKEDIN_ACCESS_TOKEN=${LINKEDIN_ACCESS_TOKEN}
+      
+      # Content Configuration
+      - CONTENT_TOPIC=${CONTENT_TOPIC:-artificial intelligence}
+      - POSTING_SCHEDULE=${POSTING_SCHEDULE:-0 9 * * *}
+      - MAX_CONTENT_LENGTH=${MAX_CONTENT_LENGTH:-3000}
+      - ENABLE_GRAPHS=${ENABLE_GRAPHS:-true}
+      - ENABLE_SLIDES=${ENABLE_SLIDES:-true}
+      
+      # LLM Configuration
+      - LLM_PROVIDER=${LLM_PROVIDER:-ollama}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://ollama:11434}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-llama2}
+      
+      # MCP Server Configuration
+      - MCP_SERVER_URL=${MCP_SERVER_URL:-http://mcp-server:8080}
+      - MCP_API_KEY=${MCP_API_KEY}
+      
+      # Web Scraping Configuration
+      - USER_AGENT=${USER_AGENT:-Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36}
+      - SELENIUM_HEADLESS=${SELENIUM_HEADLESS:-true}
+      - SELENIUM_TIMEOUT=${SELENIUM_TIMEOUT:-30}
+      
+      # Logging Configuration
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - LOG_FILE=${LOG_FILE:-logs/linkedin_automation.log}
+      
+      # Database Configuration
+      - DATABASE_URL=${DATABASE_URL:-sqlite:///data/content_history.db}
+    
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+      - /tmp/.X11-unix:/tmp/.X11-unix:rw
+    
+    depends_on:
+      - ollama
+    
+    networks:
+      - linkedin-automation
+    
+    # For debugging
+    # ports:
+    #   - "8000:8000"
+    
+    # Override command for different modes
+    # command: ["--run-once", "--topic", "artificial intelligence"]
+    # command: ["--status"]
+    # command: ["--list-jobs"]
+
+  # Local Ollama LLM service (free alternative to OpenAI)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+    networks:
+      - linkedin-automation
+    environment:
+      - OLLAMA_KEEP_ALIVE=24h
+    
+    # Initialize with a model
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+
+  # Optional: MCP Server (if you have one)
+  # mcp-server:
+  #   image: your-mcp-server:latest
+  #   container_name: mcp-server
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - linkedin-automation
+  #   environment:
+  #     - MCP_PORT=8080
+  #   volumes:
+  #     - mcp_data:/app/data
+
+  # Optional: Database for advanced analytics
+  # postgres:
+  #   image: postgres:15
+  #   container_name: linkedin-db
+  #   restart: unless-stopped
+  #   environment:
+  #     - POSTGRES_DB=linkedin_automation
+  #     - POSTGRES_USER=linkedin_user
+  #     - POSTGRES_PASSWORD=your_secure_password
+  #   volumes:
+  #     - postgres_data:/var/lib/postgresql/data
+  #   networks:
+  #     - linkedin-automation
+
+  # Optional: Web dashboard for monitoring
+  # dashboard:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.dashboard
+  #   container_name: linkedin-dashboard
+  #   restart: unless-stopped
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DATABASE_URL=postgresql://linkedin_user:your_secure_password@postgres:5432/linkedin_automation
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - linkedin-automation
+
+volumes:
+  ollama_data:
+    driver: local
+  # mcp_data:
+  #   driver: local
+  # postgres_data:
+  #   driver: local
+
+networks:
+  linkedin-automation:
+    driver: bridge
