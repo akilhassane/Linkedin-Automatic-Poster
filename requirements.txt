@@ -1,0 +1,9 @@
+duckduckgo_search==4.0.5
+newspaper3k==0.2.8
+transformers==4.41.1
+torch==2.3.0
+python-pptx==0.6.23
+matplotlib==3.9.0
+linkedin-api==2.0.0
+requests==2.32.3
+beautifulsoup4==4.12.3
