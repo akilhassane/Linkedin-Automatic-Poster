@@ -1,5 +1,6 @@
 import os
 import argparse
+from utils.logging_config import init_logging
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -10,7 +11,7 @@ from utils.trends import build_trend_graph
 from utils.linkedin import post_to_linkedin
 from utils.slide import build_slide
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+init_logging()
 
 
 def build_post(topic: str, n_articles: int = 5):

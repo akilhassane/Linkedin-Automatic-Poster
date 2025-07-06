@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 import requests
+from utils.exceptions import TokenExpiredError
 
 LINKEDIN_API = "https://api.linkedin.com/v2"
 
@@ -78,8 +79,18 @@ def post_to_linkedin(access_token: str, member_urn: str, text: str, image_path: 
     }
 
     logging.info("Posting update to LinkedIn (%s chars)...", len(text))
-    res = requests.post(post_url, json=payload, headers=_headers(access_token))
-    if res.status_code >= 400:
-        logging.error("LinkedIn post failed: %s", res.text)
-        res.raise_for_status()
-    logging.info("Post successful - URN: %s", res.headers.get("x-restli-id"))
+    try:
+        res = requests.post(post_url, json=payload, headers=_headers(access_token))
+        if res.status_code == 401 or res.status_code == 403:
+            # Likely invalid / expired token
+            logging.error("LinkedIn token expired or lacks permission (status %s)", res.status_code)
+            raise TokenExpiredError("LinkedIn access token has expired or is invalid.")
+
+        if res.status_code >= 400:
+            logging.error("LinkedIn post failed: %s", res.text)
+            res.raise_for_status()
+
+        logging.info("Post successful - URN: %s", res.headers.get("x-restli-id"))
+    except requests.exceptions.RequestException as exc:
+        logging.exception("LinkedIn request failed: %s", exc)
+        raise

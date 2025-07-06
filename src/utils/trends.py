@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import List
 import logging
-import pandas as pd
-import matplotlib.pyplot as plt
-from pytrends.request import TrendReq
+import pandas as pd  # type: ignore
+import matplotlib.pyplot as plt  # type: ignore
+from pytrends.request import TrendReq  # type: ignore
 
 
 def build_trend_graph(topic: str, days: int = 30, out_path: str | None = None) -> str:

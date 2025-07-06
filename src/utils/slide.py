@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import List
-from pptx import Presentation
-from pptx.util import Inches, Pt
+from pptx import Presentation  # type: ignore
+from pptx.util import Inches, Pt  # type: ignore
 import logging
 
 

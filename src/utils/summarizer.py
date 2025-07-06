@@ -1,5 +1,5 @@
 from typing import List
-from transformers import pipeline, AutoTokenizer, AutoModelForSeq2SeqLM
+from transformers import pipeline  # type: ignore
 import logging
 import os
 

@@ -9,3 +9,9 @@ schedule==1.2.1
 pytrends==4.9.2
 pillow==10.3.0
 pandas==2.2.2
+duckduckgo-search==3.9.5
+readability-lxml==0.8.1
+ratelimit==2.2.1
+backoff==2.2.1
+pytest==8.2.0
+pytest-mock==3.14.0

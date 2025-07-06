@@ -60,3 +60,22 @@ python src/main.py --topic "quantum computing"
 5. In the **Advanced** settings, toggle *Start on deploy* **off** and instead add a *Cron Job* set to run every 24 h at your desired time. The Cron job command should be the same as the start command above.
 
 Render's free tier gives 550 free runtime hours/month, which is enough for this once-a-day task.
+
+## LinkedIn API Setup
+
+Follow these steps to obtain the `LINKEDIN_ACCESS_TOKEN` and `LINKEDIN_MEMBER_URN` that the app needs:
+
+1. Create a LinkedIn developer application at https://www.linkedin.com/developers/apps .
+2. In the *Products* tab, request access to **Sign In with LinkedIn** and **Share on LinkedIn** (this grants the `w_member_social` scope).
+3. Under *Auth* → *OAuth 2.0 settings* add `http://localhost:8080` as a redirect URL (or any URL you control for local testing).
+4. Click "Generate access token" (under *OAuth 2.0 testing tools*) selecting the `w_member_social` scope. Copy the generated **access token** – it remains valid for up to 60 days.
+5. Grab your member URN. Hit the API once with the token:
+
+   ```bash
+   curl -H "Authorization: Bearer <ACCESS_TOKEN>" https://api.linkedin.com/v2/me | jq '.id'
+   ```
+
+   and format it as `urn:li:person:<id>` – that string is `LINKEDIN_MEMBER_URN`.
+6. Export both variables in your deployment environment.
+
+When the token expires the script will raise a `TokenExpiredError`. Simply repeat step 4 to generate a fresh token.
